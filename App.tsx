@@ -9,41 +9,26 @@
  */
 
 import React from 'react';
-import {Linking, SafeAreaView, StatusBar, StyleSheet, Text, View} from 'react-native';
-// import {Camera, useCameraDevices} from 'react-native-vision-camera';
-
-// const QrCode = () => {
-//   // const onSuccess = async (e: any) => {
-//   //   try {
-//   //     Linking.openURL(e.data);
-//   //   } catch (err) {
-//   //     console.error('An error occured', err);
-//   //   }
-//   // };
-//   const devices = useCameraDevices('wide-angle-camera');
-//   const device = devices.back;
-
-//   if (device == null)
-//     return (
-//       <View>
-//         <Text>Loading...</Text>
-//       </View>
-//     );
-//   return (
-//     <Camera style={StyleSheet.absoluteFill} device={device} isActive={true} />
-//   );
-// };
+import {
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import QRCodeScanner from './src/components/QRCodeScanner';
 
 const App = () => {
   return (
-    <SafeAreaView>
+    <View style={styles.container}>
       <StatusBar />
-      <Text>Test</Text>
-      {/* <QrCode /> */}
-    </SafeAreaView>
+      <QRCodeScanner />
+    </View>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({container: {flex: 1, borderWidth: 1, borderColor: 'blue'}});
 
 export default App;
