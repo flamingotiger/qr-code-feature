@@ -1,28 +1,54 @@
-import React, {useRef, useState} from 'react';
-import {Alert, Button, Dimensions, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  Alert,
+  Button,
+  Dimensions,
+  StyleSheet,
+  Vibration,
+  View,
+} from 'react-native';
 import {Camera, CameraType} from 'react-native-camera-kit';
 
-export type FlushModeType = 'on' | 'off' | 'auto';
+export type TorchModeType = 'on' | 'off';
 const QRCodeScanner = () => {
-  const [flushMode, setFlushMode] = useState<FlushModeType>('auto');
+  const [torchMode, setTorchMode] = useState<TorchModeType>('off');
+  const [scaned, setScaned] = useState<boolean>(true);
   const ref = useRef(null);
+
+  useEffect(() => {
+    // 종료후 재시작을 했을때 초기화
+    setScaned(true);
+  }, []);
+
+  const onBarCodeRead = (event: any) => {
+    if (!scaned) return;
+    setScaned(false);
+    Vibration.vibrate();
+    Alert.alert('QR Code', event.nativeEvent.codeStringValue, [
+      {text: 'OK', onPress: () => setScaned(true)},
+    ]);
+  };
+
   return (
     <View style={styles.container}>
       <Camera
         style={styles.scanner}
         ref={ref}
         cameraType={CameraType.Back} // Front/Back(default)
+        torchMode={torchMode}
+        zoomMode
+        focusMode
+        // Barcode Scanner Props
         scanBarcode
-        showFrame
-        laserColor="blue"
-        flushMode={flushMode}
-        onReadCode={(event: any) =>
-          Alert.alert(event.nativeEvent.codeStringValue)
-        }
+        showFrame={false}
+        laserColor="rgba(0, 0, 0, 0)"
+        frameColor="rgba(0, 0, 0, 0)"
+        surfaceColor="rgba(0, 0, 0, 0)"
+        onReadCode={onBarCodeRead}
       />
       <View style={styles.buttonGroup}>
-        <Button title="플래시 켜기" onPress={() => setFlushMode('on')} />
-        <Button title="플래시 끄기" onPress={() => setFlushMode('off')} />
+        <Button title="플래시 켜기" onPress={() => setTorchMode('on')} />
+        <Button title="플래시 끄기" onPress={() => setTorchMode('off')} />
       </View>
     </View>
   );
@@ -33,8 +59,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
-    borderWidth: 1,
-    borderColor: 'red',
   },
   scanner: {flex: 1},
   buttonGroup: {flexDirection: 'row'},
