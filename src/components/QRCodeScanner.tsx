@@ -3,22 +3,71 @@ import {
   Alert,
   Button,
   Dimensions,
+  PermissionsAndroid,
+  Platform,
   StyleSheet,
+  Text,
   Vibration,
   View,
 } from 'react-native';
 import {Camera, CameraType} from 'react-native-camera-kit';
+import {PERMISSIONS, RESULTS, request} from 'react-native-permissions';
 
 export type TorchModeType = 'on' | 'off';
 const QRCodeScanner = () => {
   const [torchMode, setTorchMode] = useState<TorchModeType>('off');
   const [scaned, setScaned] = useState<boolean>(true);
+  const [openScanner, setOpenScanner] = useState(false);
   const ref = useRef(null);
+
+  useEffect(() => {
+    permissionCheck();
+  }, []);
 
   useEffect(() => {
     // 종료후 재시작을 했을때 초기화
     setScaned(true);
   }, []);
+
+  const permissionCheck = () => {
+    if (Platform.OS !== 'ios' && Platform.OS !== 'android') return;
+
+    const definedCamera = () => Alert.alert('카메라 권한을 허용해주세요');
+
+    if (Platform.OS === 'android') {
+      const requestCameraPermission = async () => {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.CAMERA,
+            {
+              title: 'Camera Permission',
+              message: 'App needs permission for camera access',
+              buttonPositive: 'OK',
+            },
+          );
+          granted === PermissionsAndroid.RESULTS.GRANTED
+            ? setOpenScanner(true)
+            : definedCamera();
+        } catch (err) {
+          Alert.alert('Camera permission err');
+          console.warn(err);
+        }
+      };
+      requestCameraPermission();
+    }
+    if (Platform.OS === 'ios') {
+      const requestCameraPermission = async () => {
+        try {
+          const result = await request(PERMISSIONS.IOS.CAMERA);
+          result === RESULTS.GRANTED ? setOpenScanner(true) : definedCamera();
+        } catch (err) {
+          Alert.alert('Camera permission err');
+          console.warn(err);
+        }
+      };
+      requestCameraPermission();
+    }
+  };
 
   const onBarCodeRead = (event: any) => {
     if (!scaned) return;
@@ -29,6 +78,12 @@ const QRCodeScanner = () => {
     ]);
   };
 
+  if (!openScanner)
+    return (
+      <View>
+        <Text>카메라 권한을 허용해주세요</Text>
+      </View>
+    );
   return (
     <View style={styles.container}>
       <Camera
@@ -63,4 +118,5 @@ const styles = StyleSheet.create({
   scanner: {flex: 1},
   buttonGroup: {flexDirection: 'row'},
 });
+
 export default QRCodeScanner;
