@@ -3,7 +3,6 @@ import {
   Alert,
   Button,
   Dimensions,
-  PermissionsAndroid,
   Platform,
   StyleSheet,
   Text,
@@ -31,42 +30,22 @@ const QRCodeScanner = () => {
 
   const permissionCheck = () => {
     if (Platform.OS !== 'ios' && Platform.OS !== 'android') return;
-
-    const definedCamera = () => Alert.alert('카메라 권한을 허용해주세요');
-
-    if (Platform.OS === 'android') {
-      const requestCameraPermission = async () => {
-        try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.CAMERA,
-            {
-              title: 'Camera Permission',
-              message: 'App needs permission for camera access',
-              buttonPositive: 'OK',
-            },
-          );
-          granted === PermissionsAndroid.RESULTS.GRANTED
-            ? setOpenScanner(true)
-            : definedCamera();
-        } catch (err) {
-          Alert.alert('Camera permission err');
-          console.warn(err);
-        }
-      };
-      requestCameraPermission();
-    }
-    if (Platform.OS === 'ios') {
-      const requestCameraPermission = async () => {
-        try {
-          const result = await request(PERMISSIONS.IOS.CAMERA);
-          result === RESULTS.GRANTED ? setOpenScanner(true) : definedCamera();
-        } catch (err) {
-          Alert.alert('Camera permission err');
-          console.warn(err);
-        }
-      };
-      requestCameraPermission();
-    }
+    const platformPermissions =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.CAMERA
+        : PERMISSIONS.ANDROID.CAMERA;
+    const requestCameraPermission = async () => {
+      try {
+        const result = await request(platformPermissions);
+        result === RESULTS.GRANTED
+          ? setOpenScanner(true)
+          : Alert.alert('카메라 권한을 허용해주세요');
+      } catch (err) {
+        Alert.alert('Camera permission err');
+        console.warn(err);
+      }
+    };
+    requestCameraPermission();
   };
 
   const onBarCodeRead = (event: any) => {
